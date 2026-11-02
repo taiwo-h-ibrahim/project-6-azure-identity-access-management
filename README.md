@@ -10,7 +10,7 @@
 
 This project demonstrates a practical implementation of identity and access management controls in Microsoft Azure. It uses a dedicated Microsoft Entra ID analyst account, a security group, and an Azure RBAC role assignment to explore group-based access and least-privilege authorization.
 
-The lab also examines the analyst's subscription visibility, Azure Activity Log, sign-in records, and command-line authorization behavior.
+The lab also examines the analyst's subscription visibility, Azure Activity Log, sign-in records, IAM portal controls, and command-line authorization behavior.
 
 ## 2. Objectives
 
@@ -19,6 +19,7 @@ The lab also examines the analyst's subscription visibility, Azure Activity Log,
 - Configure a group-based Azure RBAC assignment.
 - Examine the analyst's effective subscription permissions.
 - Review Azure Activity Log and Entra sign-in records.
+- Inspect the analyst's available role-management controls in the subscription IAM portal.
 - Test a permitted read operation and a resource-creation operation.
 - Document the observed results and the limits of the evidence.
 
@@ -43,7 +44,8 @@ The implementation uses one Microsoft Entra tenant and one Azure subscription.
 2. The analyst is a member of the cloud security analysts security group.
 3. The group has a Reader role assignment at subscription scope.
 4. The analyst's role-assignment and My permissions views are used to inspect the resulting access.
-5. CLI tests are used to observe the behavior of a read operation and a resource-creation operation.
+5. The analyst's subscription IAM view is examined for the availability of role-management options.
+6. CLI tests are used to observe the behavior of a read operation and a resource-creation operation.
 
 ## 4. Implementation and Configuration
 
@@ -69,11 +71,11 @@ The evidence captures the following portal views while working with the analyst 
 - Analyst's Azure role assignments.
 - Subscription My permissions.
 - Subscription Activity Log.
-- Access control (IAM) overview.
+- Subscription Access control (IAM) page, where both **Add role assignment** and **Add custom role** are visibly disabled in the analyst's captured session.
 - Resource groups blade, which displayed no resource groups at capture time.
 - Analyst sign-in logs and a selected sign-in detail view.
 
-These screenshots document the views captured during the lab. They should not be interpreted as proof of controls or tests that are not visible in those views.
+P6-E09 is evidence that the analyst could not initiate the two displayed role-management actions through the portal in the captured session. It should not be interpreted as proof that every role-management operation is blocked through every Azure interface or API.
 
 ### Command-line validation
 
@@ -113,7 +115,7 @@ No successful resource-group creation is shown in the evidence.
 
 The captured CLI results show that the analyst context could execute the tested resource-group listing command and that the tested resource-group creation attempt was denied by Azure authorization.
 
-These are specific test results. They do not establish that every possible read operation succeeds or that every possible write operation is denied.
+The IAM screenshot separately shows that the **Add role assignment** and **Add custom role** options were disabled in the analyst's subscription IAM portal view. These are specific observations; they do not establish that every possible read operation succeeds, every possible write operation is denied, or every role-management route is blocked.
 
 ## 6. Sign-in and Activity Investigation
 
@@ -129,6 +131,7 @@ The lab provides practical evidence of:
 - Assigned membership of the analyst in a purpose-specific Entra security group.
 - A group-based Reader role assignment at subscription scope.
 - Visibility into the analyst's Azure role assignments and My permissions views.
+- Disabled **Add role assignment** and **Add custom role** options in the analyst's captured subscription IAM portal view.
 - A successful resource-group listing command that returned an empty result.
 - An explicit authorization denial for the tested resource-group creation operation.
 - Access to selected Azure Activity Log and Entra sign-in views.
@@ -140,25 +143,25 @@ At the time of the captured resource inventory, no resource groups were displaye
 - The lab uses a single Microsoft Entra tenant; cross-tenant B2B collaboration was not implemented.
 - No production workload is demonstrated in the evidence.
 - The CLI validation covers the specific list and create operations shown, not every Azure permission or operation.
+- The IAM screenshot demonstrates disabled role-management options in the captured portal session; it does not establish restrictions across every Azure interface or API.
 - The sign-in screenshots are selected records and do not establish tenant-wide MFA or Conditional Access enforcement.
-- The Activity Log and IAM overview screenshots document portal views; they do not independently prove a complete security posture assessment.
 - A zero-resource inventory limits the scope of resource-level inspection in this exercise.
 
 ## 9. Evidence Register
 
-The following register maps each filename to the screenshot currently committed in the repository.
+The following register maps each filename to the screenshot committed in the repository.
 
 | Evidence ID | Screenshot content |
 |---|---|
 | [P6-E01](evidence/P6-E01.png) | Microsoft Entra security groups listing, including the cloud security analysts group. |
 | [P6-E02](evidence/P6-E02.png) | Microsoft Entra users listing, including the dedicated analyst account. |
 | [P6-E03](evidence/P6-E03.png) | The `hti-p6-analyst` Groups page showing membership in `HTI-P6-Cloud-Security-Analysts`. |
-| [P6-E04](evidence/P6-E04.png) | Azure role-assignment wizard showing Reader selected and the security group selected as the member. |
+| [P6-E04](evidence/P6-E04.png) | Azure role-assignment wizard showing Reader selected and the security group selected as the member; this records the wizard stage. |
 | [P6-E05](evidence/P6-E05.png) | Azure subscription overview. |
 | [P6-E06](evidence/P6-E06.png) | The analyst's Azure role assignments view, showing the subscription-level Reader assignment. |
 | [P6-E07](evidence/P6-E07.png) | Subscription My permissions view for the analyst. |
 | [P6-E08](evidence/P6-E08.png) | Azure subscription Activity Log. |
-| [P6-E09](evidence/P6-E09.png) | Azure subscription Access control (IAM) overview. |
+| [P6-E09](evidence/P6-E09.png) | Subscription Access control (IAM) view showing **Add role assignment** and **Add custom role** disabled for the analyst in the captured portal session. |
 | [P6-E10](evidence/P6-E10.png) | Resource groups view, displaying no resource groups at capture time. |
 | [P6-E11](evidence/P6-E11.png) | Microsoft Entra sign-in logs for the analyst. |
 | [P6-E12](evidence/P6-E12.png) | Selected sign-in record details for the analyst. |
@@ -170,7 +173,7 @@ The following register maps each filename to the screenshot currently committed 
 
 This project provided practical experience with Microsoft Entra ID identities and groups, Azure RBAC, subscription-level access inspection, and authorization testing.
 
-The evidence demonstrates the analyst's group membership, the Reader role assignment workflow and resulting role-assignment view, and the observed outcomes of the selected CLI read and resource-creation tests.
+The evidence demonstrates the analyst's group membership, the Reader role assignment workflow and resulting role-assignment view, disabled role-management options in the analyst's IAM portal view, and the observed outcomes of the selected CLI read and resource-creation tests.
 
 The project is part of a cybersecurity portfolio focused on cloud security, IAM hardening, SOC operations, and defensive security.
 
