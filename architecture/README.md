@@ -6,7 +6,7 @@ This document describes the identity and access management architecture implemen
 
 The lab demonstrates how Microsoft Entra ID security groups and Azure Role-Based Access Control (RBAC) can be combined to implement group-based access and least-privilege permissions within a single Azure tenant.
 
-The implementation focuses on granting read-only access at the subscription scope while preventing an analyst account from creating or modifying resources.
+The implementation assigns the built-in Reader role to a security group at subscription scope. It then examines the analyst account's effective access and tests selected read and write operations.
 
 ## 2. Lab Architecture
 
@@ -43,7 +43,7 @@ The access model follows this sequence:
 3. The analyst account is added to the security group.
 4. The Azure Reader role is assigned to the security group at subscription scope.
 5. The analyst signs in to Azure.
-6. The analyst receives inherited Reader permissions through group membership.
+6. The analyst's subscription access is evaluated through the group-based role assignment.
 
 The role is assigned to the group rather than directly to the individual user.
 
@@ -66,40 +66,47 @@ The role is assigned to the group rather than directly to the individual user.
                          v
                  Azure Subscription
                          |
-              Read-only permissions
+              Subscription access
                          |
              +-----------+-----------+
              |                       |
              v                       v
-       Read operations         Write operations
-          Allowed                 Denied
+     Tested read operation   Tested write operation
+     az group list           az group create
+     Completed; empty        AuthorizationFailed
+     result
 ```
+
+The diagram represents only the specific CLI operations tested in this lab. It does not imply that every read operation is permitted or every write operation is denied.
 
 ## 6. Permission Validation
 
-The architecture was validated using the Azure portal and Azure Cloud Shell.
+The architecture was examined using the Azure portal and Azure Cloud Shell.
 
-| Test | Expected result | Observed result |
+| Test | Observed result | Evidence interpretation |
 |---|---|---|
-| View subscription | Allowed | Successful |
-| View role assignments | Allowed | Successful |
-| List resource groups | Allowed | Successful; empty result |
-| Create resource group | Denied | AuthorizationFailed |
-| Add role assignment | Denied | Portal controls unavailable to analyst |
+| View subscription | Subscription overview displayed | Portal view captured |
+| View role assignments | Reader assignment displayed for analyst | Subscription-level role assignment view captured |
+| View My permissions | Permissions view displayed | Analyst's access view captured |
+| Open IAM Add menu | Add role assignment and Add custom role were disabled | The analyst could not initiate these role-management actions through the captured portal view |
+| List resource groups | Command completed with an empty result | Read command succeeded; no resource groups were listed |
+| Create resource group | `AuthorizationFailed` | The tested resource-creation operation was denied |
 
-The successful resource-group listing returned no entries because no resource groups existed in the subscription.
+The resource-group listing returned no entries because no resource groups were present in the subscription at the time of capture.
 
-The attempted resource-group creation failed because the analyst lacked the required `Microsoft.Resources/subscriptions/resourceGroups/write` permission.
+The attempted resource-group creation failed with an authorization error identifying the required `Microsoft.Resources/subscriptions/resourceGroups/write` permission.
+
+The IAM screenshot shows that both **Add role assignment** and **Add custom role** were disabled in the analyst's subscription IAM view. This is evidence of the portal controls available to that account in the captured session; it is not a test of every possible role-management interface or API.
 
 ## 7. Security Design Principles
 
 This implementation demonstrates:
 
-- **Least privilege:** The analyst receives Reader rather than Contributor or Owner.
-- **Group-based access control:** Permissions are assigned to a security group instead of an individual account.
-- **Separation of duties:** Administrative responsibilities remain with the administrator account.
-- **Subscription-level RBAC:** Access is controlled at the subscription scope.
-- **Permission validation:** Both permitted and denied operations were tested.
+- **Least privilege:** The analyst receives the built-in Reader role rather than Contributor or Owner.
+- **Group-based access control:** The role assignment targets a security group rather than an individual account.
+- **Separation of duties:** Administrative configuration is performed separately from the analyst's access.
+- **Subscription-level RBAC:** The role assignment is made at subscription scope.
+- **Permission validation:** Specific portal controls and CLI operations were examined and tested.
 
 ## 8. Scope and Limitations
 
@@ -113,12 +120,14 @@ It does not implement:
 - Production workloads or deployed Azure resources.
 - A Conditional Access policy enforcing MFA.
 
-These are outside the scope of this lab and may be explored in subsequent projects.
+The CLI tests cover the specific list and create operations shown. The IAM screenshot documents disabled portal controls in the captured analyst session; it does not independently establish restrictions across all Azure interfaces or APIs.
+
+These areas are outside the scope of this lab and may be explored in subsequent projects.
 
 ## 9. Conclusion
 
-The lab demonstrates a practical implementation of group-based Azure RBAC and least-privilege access.
+The lab demonstrates group-based Azure RBAC and least-privilege access in a single-tenant environment.
 
-The analyst account successfully accessed subscription information through inherited group permissions but was unable to perform a resource-creation operation.
+The evidence includes the analyst's group membership, the subscription-level Reader role assignment view, disabled role-management options in the analyst's IAM portal view, a successful resource-group listing that returned an empty result, and an authorization denial for the tested resource-group creation operation.
 
-This provides practical evidence of how Microsoft Entra ID and Azure RBAC can be used together to control access within an Azure environment.
+This provides practical evidence of how Microsoft Entra ID and Azure RBAC can be used together to manage access within an Azure environment.
