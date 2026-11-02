@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1060" viewBox="0 0 1400 1060" role="img" aria-labelledby="title desc">
+<title id="title">Project 6 — Azure Identity and Access Management Architecture</title>
+<desc id="desc">A dedicated Microsoft Entra analyst account belongs to a security group. The group receives the Azure Reader role at subscription scope. The diagram records specific portal and CLI validation outcomes.</desc>
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#536579"/></marker>
+  <style>
+    .heading{font:700 30px Arial,sans-serif;fill:#172b4d}
+    .subheading{font:600 20px Arial,sans-serif;fill:#29415e}
+    .body{font:17px Arial,sans-serif;fill:#24364b}
+    .small{font:15px Arial,sans-serif;fill:#42566d}
+    .mono{font:16px 'Courier New',monospace;fill:#24364b}
+    .identity{fill:#eaf2ff;stroke:#4776b8;stroke-width:2}
+    .access{fill:#eaf7ef;stroke:#39835a;stroke-width:2}
+    .observed{fill:#fff5e3;stroke:#b47a24;stroke-width:2}
+    .boundary{fill:#f8fafc;stroke:#9aaabd;stroke-width:2;stroke-dasharray:8 6}
+    .arrow{stroke:#536579;stroke-width:2.5;fill:none;marker-end:url(#arrow)}
+  </style>
+</defs>
+<rect width="1400" height="1060" fill="#ffffff"/>
+<text x="700" y="55" text-anchor="middle" class="heading">Project 6 — Azure Identity &amp; Access Management</text>
+<text x="700" y="88" text-anchor="middle" class="small">Group-based RBAC • Least privilege • Single-tenant lab</text>
+<rect x="120" y="125" width="1160" height="330" rx="18" class="boundary"/>
+<text x="155" y="165" class="subheading">Microsoft Entra ID — single tenant</text>
+<rect x="420" y="195" width="560" height="95" rx="12" class="identity"/>
+<text x="700" y="230" text-anchor="middle" class="subheading">Dedicated analyst account</text>
+<text x="700" y="260" text-anchor="middle" class="mono">hti-p6-analyst</text>
+<text x="700" y="280" text-anchor="middle" class="small">User type: Member</text>
+<path d="M700 290 V345" class="arrow"/>
+<text x="725" y="325" class="small">Assigned membership</text>
+<rect x="330" y="350" width="740" height="78" rx="12" class="identity"/>
+<text x="700" y="382" text-anchor="middle" class="subheading">Security group</text>
+<text x="700" y="408" text-anchor="middle" class="mono">HTI-P6-Cloud-Security-Analysts</text>
+<path d="M700 428 V505" class="arrow"/>
+<text x="725" y="472" class="small">Group-based Azure RBAC assignment</text>
+<rect x="420" y="510" width="560" height="88" rx="12" class="access"/>
+<text x="700" y="545" text-anchor="middle" class="subheading">Built-in Azure role: Reader</text>
+<text x="700" y="575" text-anchor="middle" class="body">Assignment scope: Subscription</text>
+<path d="M700 598 V660" class="arrow"/>
+<rect x="120" y="665" width="1160" height="345" rx="18" class="boundary"/>
+<text x="155" y="705" class="subheading">Azure subscription — Azure subscription 1</text>
+<rect x="500" y="725" width="400" height="60" rx="10" class="access"/>
+<text x="700" y="762" text-anchor="middle" class="subheading">Subscription scope</text>
+<path d="M700 785 V820 H330 V845" class="arrow"/>
+<path d="M700 820 V845" class="arrow"/>
+<path d="M700 820 H1070 V845" class="arrow"/>
+<rect x="155" y="850" width="350" height="125" rx="12" class="observed"/>
+<text x="330" y="882" text-anchor="middle" class="subheading">Portal IAM view</text>
+<text x="330" y="914" text-anchor="middle" class="body">Add role assignment:</text>
+<text x="330" y="938" text-anchor="middle" class="body">disabled</text>
+<text x="330" y="960" text-anchor="middle" class="small">Add custom role: disabled</text>
+<rect x="525" y="850" width="350" height="125" rx="12" class="observed"/>
+<text x="700" y="882" text-anchor="middle" class="subheading">Tested read operation</text>
+<text x="700" y="914" text-anchor="middle" class="mono">az group list</text>
+<text x="700" y="943" text-anchor="middle" class="body">Command succeeded;</text>
+<text x="700" y="965" text-anchor="middle" class="small">empty result (no groups listed)</text>
+<rect x="895" y="850" width="350" height="125" rx="12" class="observed"/>
+<text x="1070" y="882" text-anchor="middle" class="subheading">Tested write operation</text>
+<text x="1070" y="914" text-anchor="middle" class="mono">az group create</text>
+<text x="1070" y="946" text-anchor="middle" class="body">AuthorizationFailed</text>
+<text x="1070" y="968" text-anchor="middle" class="small">Resource-group creation denied</text>
+<text x="700" y="1038" text-anchor="middle" class="small">Outcomes are limited to the specific portal controls and CLI operations tested in this lab.</text>
+</svg>
