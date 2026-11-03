@@ -19,6 +19,12 @@ The architecture consists of:
 - **Azure RBAC role:** Built-in Reader role.
 - **Assignment scope:** Azure subscription.
 
+### Architecture diagram
+
+![Project 6 Azure identity and access management architecture](project-6-azure-iam-architecture.png)
+
+[View or download the scalable SVG architecture diagram](project-6-azure-iam-architecture.svg).
+
 ## 3. Identity and Access Structure
 
 | Component | Configuration |
@@ -47,39 +53,7 @@ The access model follows this sequence:
 
 The role is assigned to the group rather than directly to the individual user.
 
-## 5. Architecture Diagram
-
-```text
-                 Microsoft Entra ID
-                         |
-              HTI-P6 Lab Analyst
-                         |
-                  Member of
-                         |
-                         v
-       HTI-P6-Cloud-Security-Analysts
-                         |
-                 Azure RBAC Assignment
-                         |
-                    Reader Role
-                         |
-                         v
-                 Azure Subscription
-                         |
-              Subscription access
-                         |
-             +-----------+-----------+
-             |                       |
-             v                       v
-     Tested read operation   Tested write operation
-     az group list           az group create
-     Completed; empty        AuthorizationFailed
-     result
-```
-
-The diagram represents only the specific CLI operations tested in this lab. It does not imply that every read operation is permitted or every write operation is denied.
-
-## 6. Permission Validation
+## 5. Permission Validation
 
 The architecture was examined using the Azure portal and Azure Cloud Shell.
 
@@ -98,7 +72,7 @@ The attempted resource-group creation failed with an authorization error identif
 
 The IAM screenshot shows that both **Add role assignment** and **Add custom role** were disabled in the analyst's subscription IAM view. This is evidence of the portal controls available to that account in the captured session; it is not a test of every possible role-management interface or API.
 
-## 7. Security Design Principles
+## 6. Security Design Principles
 
 This implementation demonstrates:
 
@@ -108,7 +82,7 @@ This implementation demonstrates:
 - **Subscription-level RBAC:** The role assignment is made at subscription scope.
 - **Permission validation:** Specific portal controls and CLI operations were examined and tested.
 
-## 8. Scope and Limitations
+## 7. Scope and Limitations
 
 This project implements single-tenant Azure identity and access management.
 
@@ -124,7 +98,7 @@ The CLI tests cover the specific list and create operations shown. The IAM scree
 
 These areas are outside the scope of this lab and may be explored in subsequent projects.
 
-## 9. Conclusion
+## 8. Conclusion
 
 The lab demonstrates group-based Azure RBAC and least-privilege access in a single-tenant environment.
 
