@@ -1,4 +1,4 @@
-# Project 6: Azure Identity and Access Management — Group-Based RBAC and Least Privilege
+# Project 6: Azure Identity and Access Management — Group-Based RBAC, Least Privilege and B2B External Access
 
 **Author:** Taiwo H Ibrahim  
 **Platform:** Microsoft Azure  
@@ -8,11 +8,15 @@
 
 ## 1. Project Overview
 
-This project demonstrates a practical implementation of identity and access management controls in Microsoft Azure. It uses a dedicated Microsoft Entra ID analyst account, a security group, and an Azure RBAC role assignment to explore group-based access and least-privilege authorization.
+This project demonstrates practical identity and access management controls in Microsoft Azure. It began with a dedicated Microsoft Entra ID analyst account, a security group, and an Azure RBAC role assignment to explore group-based access and least-privilege authorization.
 
-The lab also examines the analyst's subscription visibility, Azure Activity Log, sign-in records, IAM portal controls, and command-line authorization behavior.
+The project has now been extended with a separate **B2B External Guest RBAC** exercise. The extension demonstrates least-privilege access for an externally authenticated Gmail identity to a controlled Azure Storage resource, including successful read access and denied write/delete operations.
+
+The original single-tenant exercise and its evidence remain unchanged. The B2B work is documented as a separate extension under the project evidence directory.
 
 ## 2. Objectives
+
+### Core Azure RBAC exercise
 
 - Create a Microsoft Entra ID security group for cloud security analysts.
 - Create a dedicated analyst user account and add it to the group.
@@ -23,160 +27,152 @@ The lab also examines the analyst's subscription visibility, Azure Activity Log,
 - Test a permitted read operation and a resource-creation operation.
 - Document the observed results and the limits of the evidence.
 
+### B2B External Guest RBAC extension
+
+- Create and validate an external B2B guest identity.
+- Complete the guest invitation redemption flow.
+- Confirm the guest can authenticate to the resource tenant.
+- Assign least-privilege Azure RBAC permissions at storage-account scope.
+- Demonstrate an allowed Blob read operation.
+- Demonstrate that Blob write and delete operations are denied.
+- Document the observed portal and CLI behavior without generalizing the result beyond the tested configuration.
+
 ## 3. Lab Architecture
 
-The implementation uses one Microsoft Entra tenant and one Azure subscription.
+The core implementation uses one Microsoft Entra tenant and one Azure subscription.
 
-| Component | Lab configuration |
+| Component | Core lab configuration |
 |---|---|
 | Directory | Default Directory |
 | Subscription | Azure subscription 1 |
 | Analyst account | `hti-p6-analyst` |
 | User type | Member |
 | Security group | `HTI-P6-Cloud-Security-Analysts` |
-| Group membership | Assigned |
 | Azure RBAC role | Reader |
 | Assignment scope | Subscription |
 
-### Access model
+The B2B extension adds an external Gmail identity and a controlled Azure Storage resource:
 
-1. The analyst signs in using the dedicated Entra ID account.
-2. The analyst is a member of the cloud security analysts security group.
-3. The group has a Reader role assignment at subscription scope.
-4. The analyst's role-assignment and My permissions views are used to inspect the resulting access.
-5. The analyst's subscription IAM view is examined for the availability of role-management options.
-6. CLI tests are used to observe the behavior of a read operation and a resource-creation operation.
-
-## 4. Implementation and Configuration
-
-### Microsoft Entra ID
-
-A security group named `HTI-P6-Cloud-Security-Analysts` was created. A dedicated Member account, `hti-p6-analyst`, was also created and added to the group.
-
-The group listing, user listing, and analyst's Groups page are included in the evidence register below.
-
-### Azure RBAC
-
-The Azure role-assignment workflow was used to select the built-in Reader role and the `HTI-P6-Cloud-Security-Analysts` group as the member. The analyst's Azure role assignments view subsequently displays the Reader assignment at subscription scope. The analyst's My permissions view is also captured as supporting evidence of the access view available to that identity.
-
-The configuration wizard screenshot records the selected role and group during the workflow; the separate role-assignment and My permissions screenshots provide the subsequent views.
-
-## 5. Validation and Investigation
-
-### Portal validation
-
-The evidence captures the following portal views while working with the analyst identity:
-
-- Subscription overview.
-- Analyst's Azure role assignments.
-- Subscription My permissions.
-- Subscription Activity Log.
-- Subscription Access control (IAM) page, where both **Add role assignment** and **Add custom role** are visibly disabled in the analyst's captured session.
-- Resource groups blade, which displayed no resource groups at capture time.
-- Analyst sign-in logs and a selected sign-in detail view.
-
-P6-E09 is evidence that the analyst could not initiate the two displayed role-management actions through the portal in the captured session. It should not be interpreted as proof that every role-management operation is blocked through every Azure interface or API.
-
-### Command-line validation
-
-The CLI checks were performed in the analyst's Azure context.
-
-**Identity and subscription context**
-
-```bash
-az account show --query "{subscription:name, id:id, user:user.name}" -o table
-```
-
-The captured output displays the Azure subscription and the `hti-p6-analyst` user context.
-
-**Read operation**
-
-```bash
-az group list --output table
-```
-
-The command completed and returned no resource groups. This is consistent with the empty Resource groups view captured in the portal.
-
-**Resource-creation attempt**
-
-```bash
-az group create --name rg-reader-permission-test --location eastus
-```
-
-The captured output shows an `AuthorizationFailed` response for the resource-group creation operation, including the permission:
-
-```text
-Microsoft.Resources/subscriptions/resourceGroups/write
-```
-
-No successful resource-group creation is shown in the evidence.
-
-### What the tests establish
-
-The captured CLI results show that the analyst context could execute the tested resource-group listing command and that the tested resource-group creation attempt was denied by Azure authorization.
-
-The IAM screenshot separately shows that the **Add role assignment** and **Add custom role** options were disabled in the analyst's subscription IAM portal view. These are specific observations; they do not establish that every possible read operation succeeds, every possible write operation is denied, or every role-management route is blocked.
-
-## 6. Sign-in and Activity Investigation
-
-The lab includes screenshots of the analyst's Entra sign-in log and a selected sign-in detail view, as well as the subscription Activity Log.
-
-These views provide investigation context for the identity and subscription activity captured during the exercise. The screenshots should be interpreted as records visible at the time of capture; they are not, by themselves, a complete assessment of tenant-wide authentication policy, Conditional Access, or MFA enforcement.
-
-## 7. Security Observations
-
-The lab provides practical evidence of:
-
-- A dedicated analyst identity separate from the administrator identity.
-- Assigned membership of the analyst in a purpose-specific Entra security group.
-- A group-based Reader role assignment at subscription scope.
-- Visibility into the analyst's Azure role assignments and My permissions views.
-- Disabled **Add role assignment** and **Add custom role** options in the analyst's captured subscription IAM portal view.
-- A successful resource-group listing command that returned an empty result.
-- An explicit authorization denial for the tested resource-group creation operation.
-- Access to selected Azure Activity Log and Entra sign-in views.
-
-At the time of the captured resource inventory, no resource groups were displayed. Therefore, inspection of an existing deployed workload was not part of the demonstrated validation.
-
-## 8. Limitations
-
-- The lab uses a single Microsoft Entra tenant; cross-tenant B2B collaboration was not implemented.
-- No production workload is demonstrated in the evidence.
-- The CLI validation covers the specific list and create operations shown, not every Azure permission or operation.
-- The IAM screenshot demonstrates disabled role-management options in the captured portal session; it does not establish restrictions across every Azure interface or API.
-- The sign-in screenshots are selected records and do not establish tenant-wide MFA or Conditional Access enforcement.
-- A zero-resource inventory limits the scope of resource-level inspection in this exercise.
-
-## 9. Evidence Register
-
-The following register maps each filename to the screenshot committed in the repository.
-
-| Evidence ID | Screenshot content |
+| Component | B2B extension configuration |
 |---|---|
-| [P6-E01](evidence/P6-E01.png) | Microsoft Entra security groups listing, including the cloud security analysts group. |
-| [P6-E02](evidence/P6-E02.png) | Microsoft Entra users listing, including the dedicated analyst account. |
-| [P6-E03](evidence/P6-E03.png) | The `hti-p6-analyst` Groups page showing membership in `HTI-P6-Cloud-Security-Analysts`. |
-| [P6-E04](evidence/P6-E04.png) | Azure role-assignment wizard showing Reader selected and the security group selected as the member; this records the wizard stage. |
-| [P6-E05](evidence/P6-E05.png) | Azure subscription overview. |
-| [P6-E06](evidence/P6-E06.png) | The analyst's Azure role assignments view, showing the subscription-level Reader assignment. |
-| [P6-E07](evidence/P6-E07.png) | Subscription My permissions view for the analyst. |
-| [P6-E08](evidence/P6-E08.png) | Azure subscription Activity Log. |
-| [P6-E09](evidence/P6-E09.png) | Subscription Access control (IAM) view showing **Add role assignment** and **Add custom role** disabled for the analyst in the captured portal session. |
-| [P6-E10](evidence/P6-E10.png) | Resource groups view, displaying no resource groups at capture time. |
-| [P6-E11](evidence/P6-E11.png) | Microsoft Entra sign-in logs for the analyst. |
-| [P6-E12](evidence/P6-E12.png) | Selected sign-in record details for the analyst. |
-| [P6-E13](evidence/P6-E13.png) | CLI output from `az account show`, displaying the subscription and analyst identity context. |
-| [P6-E14](evidence/P6-E14.png) | CLI resource-group creation attempt, showing an `AuthorizationFailed` response for `resourceGroups/write`. |
-| [P6-E15](evidence/P6-E15.png) | CLI output from `az group list --output table`, completing with no resource groups listed. |
+| External identity | Gmail B2B guest |
+| Guest display name | `HTI External Guest Test` |
+| Guest user type | Guest |
+| Resource group | `HTI-ExternalGuest-Lab` |
+| Storage account | `htiexternalguestlab01` |
+| Container | `guest-access-test` |
+| Test blob | `guest-test.txt` |
+| Azure RBAC role | Reader |
+| Storage data role | Storage Blob Data Reader |
+| Assignment scope | Storage account |
 
-## 10. Conclusion
+## 4. Core Implementation
 
-This project provided practical experience with Microsoft Entra ID identities and groups, Azure RBAC, subscription-level access inspection, and authorization testing.
+The core lab demonstrates:
 
-The evidence demonstrates the analyst's group membership, the Reader role assignment workflow and resulting role-assignment view, disabled role-management options in the analyst's IAM portal view, and the observed outcomes of the selected CLI read and resource-creation tests.
+1. A dedicated analyst account is created in Microsoft Entra ID.
+2. The analyst is added to the cloud security analysts security group.
+3. The group receives the built-in Reader role at subscription scope.
+4. The analyst's role assignments and My permissions views are examined.
+5. The subscription IAM view is examined for role-management controls.
+6. CLI tests validate the selected read and resource-creation operations.
 
-The project is part of a cybersecurity portfolio focused on cloud security, IAM hardening, SOC operations, and defensive security.
+See the [core evidence register](evidence/README.md) for the original P6-E01–P6-E15 evidence.
 
----
+## 5. B2B External Guest RBAC Extension
 
-**GitHub Portfolio Author:** Taiwo H Ibrahim
+The B2B extension changes the identity boundary while keeping the access-control objective focused on least privilege.
+
+The access path tested was:
+
+**External Gmail identity → Microsoft Entra B2B guest → authentication/MFA → Azure OAuth token → Azure RBAC → Storage account → Blob read**
+
+The external guest was assigned **Reader** and **Storage Blob Data Reader** at the storage-account scope.
+
+### Validation
+
+The external guest authenticated with Azure CLI using:
+
+```powershell
+az login --tenant d67ea4f0-cc08-452f-85f6-297bf798fb3d
+```
+
+The authenticated context was confirmed with:
+
+```powershell
+az account show
+```
+
+The Blob read test succeeded:
+
+```powershell
+az storage blob show --account-name htiexternalguestlab01 --container-name guest-access-test --name guest-test.txt --auth-mode login
+```
+
+The resulting command returned Blob metadata for `guest-test.txt`.
+
+A controlled Blob upload attempt was denied by Azure authorization, and a Blob delete attempt was also denied.
+
+This provides bounded evidence that the external guest could perform the tested read operation but could not perform the tested write or delete operations.
+
+### Portal observation
+
+The guest could authenticate to the lab tenant and use Azure CLI for the resource-access validation. The browser-based guest experience was more limited in this configuration, so CLI was used as the practical validation interface.
+
+This is an observation about the configuration and access path tested in this lab. It should not be generalized as a Microsoft rule that B2B guests can only access Azure resources through CLI.
+
+The full extension documentation and evidence register are in [evidence/b2b-external-guest-rbac](evidence/b2b-external-guest-rbac/README.md).
+
+## 6. Security Observations
+
+Across the core and extension exercises, the project provides practical evidence of:
+
+- Dedicated Entra identities and purpose-specific security groups.
+- Group-based Azure RBAC at subscription scope.
+- Least-privilege Reader access for the core analyst.
+- External B2B guest authentication.
+- Resource-scoped RBAC for an external identity.
+- Successful authorization for a tested Blob read operation.
+- Authorization denial for the tested Blob write operation.
+- Authorization denial for the tested Blob delete operation.
+- Visibility into selected Azure Activity Log and Entra sign-in records.
+- The distinction between identity authentication and resource authorization.
+
+## 7. Limitations
+
+- The core lab uses a single Microsoft Entra tenant.
+- The B2B extension uses an external Gmail identity rather than a second organizational tenant.
+- The validation covers the specific operations shown; it does not test every Azure permission or Storage operation.
+- The B2B browser/portal behavior is specific to the observed lab configuration and should not be generalized to all B2B configurations or licensing tiers.
+- The B2B test resource is a controlled lab resource, not a production workload.
+- The sign-in evidence consists of selected records and does not establish tenant-wide MFA or Conditional Access enforcement.
+- The original core project evidence remains unchanged.
+
+## 8. Evidence
+
+### Core exercise
+
+P6-E01 through P6-E15 document the original single-tenant Azure IAM implementation.
+
+### B2B External Guest RBAC
+
+The extension has its own evidence sequence:
+
+| Evidence ID | Validation |
+|---|---|
+| P6-B2B-E01 | External B2B guest invitation/user configuration |
+| P6-B2B-E02 | Successful invitation redemption |
+| P6-B2B-E03 | Guest RBAC assignment / Check access |
+| P6-B2B-E04 | External guest Azure CLI authentication |
+| P6-B2B-E05 | Authenticated guest identity and tenant context |
+| P6-B2B-E06 | Blob read succeeds |
+| P6-B2B-E07 | Blob write denied |
+| P6-B2B-E08 | Blob delete denied |
+
+Only screenshots actually captured and committed should be mapped to these IDs.
+
+## 9. Conclusion
+
+Project 6 now demonstrates two complementary IAM scenarios: group-based least-privilege access for an internal analyst identity and narrowly scoped least-privilege access for an externally authenticated B2B guest.
+
+The B2B extension adds practical evidence of external identity authentication, resource-scoped Azure RBAC, successful read authorization, and denied write/delete operations while preserving the original project implementation and evidence.
