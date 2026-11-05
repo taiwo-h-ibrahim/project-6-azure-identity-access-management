@@ -4,9 +4,9 @@
 
 This directory contains the screenshots collected during the implementation and validation of Project 6: Azure Identity and Access Management.
 
-The evidence documents Microsoft Entra ID identities and group membership, the Azure RBAC configuration workflow and resulting access views, subscription portal views, sign-in records, and selected Azure CLI authorization tests.
+The evidence is separated into the original **core Azure IAM exercise** and the **B2B External Guest RBAC extension** so that the additional capability is clearly identifiable without renumbering or overwriting the original evidence.
 
-## 2. Evidence Register
+## 2. Core Evidence Register
 
 | Evidence ID | Evidence Description | What It Demonstrates |
 |---|---|---|
@@ -26,49 +26,56 @@ The evidence documents Microsoft Entra ID identities and group membership, the A
 | P6-E14 | Azure CLI resource-group creation attempt | The attempted resource-group creation returns `AuthorizationFailed` for the required `resourceGroups/write` permission. |
 | P6-E15 | Azure CLI resource-group listing | `az group list --output table` completes and returns no resource groups. |
 
-## 3. Key Validation Evidence
+## 3. B2B External Guest RBAC Extension
 
-Three Azure CLI tests provide direct evidence of the analyst's identity context and the outcomes of the selected read and write operations.
+The B2B extension is documented separately so its evidence can be reviewed as an independent exercise while remaining part of Project 6.
 
-### Identity and subscription context
+See the dedicated extension README:
 
-```bash
-az account show --query "{subscription:name, id:id, user:user.name}" -o table
-```
+[b2b-external-guest-rbac/README.md](b2b-external-guest-rbac/README.md)
 
-The captured output displays the active Azure subscription and the signed-in analyst identity context.
+### B2B evidence sequence
 
-### Read operation
+| Evidence ID | Evidence Description | What It Demonstrates |
+|---|---|---|
+| P6-B2B-E01 | External B2B guest invitation/user configuration | The external Gmail identity was configured as a guest in the resource tenant. |
+| P6-B2B-E02 | Successful external guest invitation redemption | The B2B invitation redemption completed successfully. |
+| P6-B2B-E03 | Guest RBAC assignment / Check access | Reader and Storage Blob Data Reader are assigned to the guest at the storage-account scope. |
+| P6-B2B-E04 | Azure CLI authentication | The external Gmail guest authenticates to the resource tenant with `az login --tenant`. |
+| P6-B2B-E05 | Authenticated guest identity and tenant context | `az account show` confirms the external Gmail identity and selected resource-tenant subscription context. |
+| P6-B2B-E06 | Blob read succeeds | The guest successfully retrieves the test Blob using `--auth-mode login`. |
+| P6-B2B-E07 | Blob write denied | The controlled Blob upload attempt is rejected by Azure authorization. |
+| P6-B2B-E08 | Blob delete denied | The Blob delete attempt is rejected by Azure authorization. |
 
-```bash
-az group list --output table
-```
+## 4. Key Validation Evidence
 
-The command completes and returns an empty list because no resource groups were present in the subscription at the time of capture. An empty result is not a permission-denied response.
+### Core exercise
 
-### Write operation
+The core evidence demonstrates the internal analyst's group membership, subscription-level Reader assignment, IAM portal controls, and selected CLI authorization results.
 
-```bash
-az group create --name rg-reader-permission-test --location eastus
-```
+### B2B extension
 
-The captured command output returns `AuthorizationFailed` and identifies the required `Microsoft.Resources/subscriptions/resourceGroups/write` permission. This demonstrates denial of this specific resource-group creation attempt.
+The B2B evidence demonstrates the complete external-access path:
 
-## 4. Interpreting the IAM Screenshot
+**External Gmail identity → B2B guest authentication → Azure OAuth/CLI context → resource-scoped RBAC → read allowed → write/delete denied**
 
-P6-E09 captures the analyst's Azure subscription **Access control (IAM)** page. In the opened **Add** menu, both **Add role assignment (disabled)** and **Add custom role (disabled)** are visible.
+The strongest validation is the combination of P6-B2B-E05 through P6-B2B-E08:
 
-This supports the specific conclusion that those role-management options were unavailable to the analyst through the portal in the captured session. It should not be generalized into proof about every role-management operation through other interfaces or APIs.
+- the authenticated identity is confirmed;
+- the Blob read succeeds;
+- the Blob write is denied;
+- the Blob delete is denied.
 
 ## 5. Evidence Handling and Redaction
 
 Before publishing screenshots:
 
 - Remove or obscure personal email addresses where appropriate.
-- Redact subscription IDs and tenant identifiers where appropriate.
+- Redact subscription IDs and tenant identifiers where appropriate if they are not needed to demonstrate the result.
 - Never publish passwords, access tokens, client secrets, or recovery codes.
 - Preserve relevant role names, permission details, command output, and error messages.
 - Do not alter evidence in a way that changes the meaning of the result.
+- Keep the original P6-E01–P6-E15 evidence unchanged when adding extension evidence.
 
 ## 6. Important Notes
 
@@ -76,11 +83,12 @@ Before publishing screenshots:
 - P6-E09 shows disabled role-management options in the captured IAM portal view.
 - P6-E10 and P6-E15 show an empty resource-group inventory; they do not indicate that listing was denied.
 - P6-E14 is the evidence of the tested resource-group creation denial.
-- The sign-in evidence relates to the records shown and does not establish tenant-wide MFA or Conditional Access enforcement.
+- The B2B extension does not replace or renumber the original evidence.
+- The B2B portal observation is specific to the lab configuration and should not be presented as a universal limitation of Azure B2B guests.
 - The screenshots document the actual lab implementation and should not be represented as production deployment evidence.
 
 ## 7. Conclusion
 
-The evidence documents the analyst's Entra ID group membership, the group-based Reader assignment workflow and resulting role-assignment view, the disabled role-management options visible in the analyst's subscription IAM portal view, and the outcomes of the selected Azure CLI tests.
+The Project 6 evidence set now contains both the original single-tenant Azure IAM exercise and a separately documented B2B external guest RBAC extension.
 
-Together, these screenshots support a bounded, evidence-based account of the Project 6 implementation without claiming that untested permissions or interfaces were validated.
+The evidence structure preserves the original work while making the new external-access capability easy for a reviewer to identify and evaluate.
